@@ -249,15 +249,25 @@ int kprintf(char *fmt,...) {
 }
 
 int show_bmp(char *p, int start_row, int start_col){// SAME as before
-    int h, w, pixel, rsize, i, j;
+    int h, w, pixel, rsize, i, j, bpp;
     unsigned char r, g, b;
+    unsigned char *up = (unsigned char *)p;
     char *pp;
-    int *q = (int *)(p+14); // skip over 14-byte file header
-    w = *(q+1); // image width in pixels
-    h = *(q+2); // image height in pixels
+
+    w = up[18] | (up[19] << 8) | (up[20] << 16) | (up[21] << 24);
+    h = up[22] | (up[23] << 8) | (up[24] << 16) | (up[25] << 24);
+    bpp = up[28] | (up[29] << 8);
+
     p += 54; // p-> pixels in image
     //BMP images are upside down, each row is a multiple of 4 bytes
-    rsize = 4*(w + 0); // multiple of 4
+    if (bpp == 24) {
+        rsize = (w * 3 + 3) & ~3;
+    } else if (bpp == 32) {
+        rsize = w * 4;
+    } else {
+        return 0; // Unsupported
+    }
+
     p += (h-1)*rsize; // last row of pixels
     for (i=start_row; i<start_row + h; i++){
         pp = p;
@@ -265,9 +275,11 @@ int show_bmp(char *p, int start_row, int start_col){// SAME as before
             b = *pp; g = *(pp+1); r = *(pp+2); // BRG values
             pixel = (b<<16) | (g<<8) | r; // pixel value
             fb[i*WIDTH + j] = pixel; // write to frame buffer
-            pp += 4; // advance pp to next pixel
+            if (bpp == 24) pp += 3;
+            else pp += 4;
         }
         p -= rsize; // to preceding row
     }
     printf("\nBMP image height=%d width=%d\n", h, w);
+    return 0;
 }

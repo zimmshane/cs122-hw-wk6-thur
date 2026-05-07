@@ -39,6 +39,7 @@ int main() {
   color = RED;  // int color in vid.c file
   fbuf_init();  // initialize LCD display
 
+
   char* p = &_binary____image0_bmp_start;
   show_bmp(p, 0, 0);  // display a logo
 
