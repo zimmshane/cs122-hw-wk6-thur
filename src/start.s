@@ -1,7 +1,7 @@
 /********* ts.s file ***********/
 .text
 .code 32
-.global reset_handler, vectors_start, vectors_end, 
+.global reset_handler, vectors_start, vectors_end,
 .global lock, unlock
 reset_handler: // entry point of program
 // set SVC stack
@@ -18,10 +18,10 @@ reset_handler: // entry point of program
     B .
 
 irq_handler:
-    sub lr, lr, #4
-    stmfd sp!, {r0-r12, lr} // stack ALL registers
-    bl IRQ_handler // call IRQ_hanler() in C
-    ldmfd sp!, {r0-r12, pc}^ // return
+  sub lr, lr, #4
+  stmfd sp!, {r0-r12, lr}   // stack ALL registers
+  bl IRQ_handler            // call IRQ_handler() in C
+  ldmfd sp!, {r0-r3, r12, pc}^ // return
 
 lock: // mask out IRQ interrupts
     MRS r0, cpsr
